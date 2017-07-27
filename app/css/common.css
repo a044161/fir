@@ -1,0 +1,11 @@
+@import './modules/reset';
+@import './modules/fir';
+
+#FIR {
+	width: 600px;
+	height: 600px;
+	margin: 0 auto;
+	position: relative;
+	top: 50%;
+	margin-top: -300px;
+}
