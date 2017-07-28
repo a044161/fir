@@ -2,13 +2,7 @@ import utils from "../modules/utils";
 
 let chess_array, row_num, chess_point, point_index, chess_val;
 
-function calculateX() {
-	let min_col = chess_point[1] - 4 > 0 ? chess_point[1] - 4 : 1;
-	let max_col = chess_point[1] + 4 > row_num ? row_num : chess_point[1] + 4;
-
-	min_col = getPointIndex([chess_point[0], min_col]) - 1;
-	max_col = getPointIndex([chess_point[0], max_col]) + 1;
-
+function commonCalculateXY(min, max, space){
 	let get_point_1 = 0;
 	let get_point_2 = 0;
 
@@ -16,23 +10,25 @@ function calculateX() {
 	let max_index = point_index;
 
 	for (let i = 0; i < 5; i++) {
-		if (min_index > min_col && !utils.isUndefined(chess_array[min_index])) {
-			get_point_1 += chess_array[min_index];
-		} else if (utils.isUndefined(chess_array[min_index])) {
+		const min_point_value = chess_array[min_index] ? chess_array[min_index].value : undefined;
+		const max_point_value = chess_array[max_index] ? chess_array[max_index].value : undefined;
+
+		if (min_index > min && !utils.isUndefined(min_point_value)) {
+			get_point_1 += min_point_value;
+		} else if (utils.isUndefined(min_point_value)) {
 			min_index = null;
 		}
 
-		if (max_index < max_col && !utils.isUndefined(chess_array[max_index])) {
-			get_point_2 += chess_array[max_index];
-		} else if (utils.isUndefined(chess_array[max_index])) {
+		if (max_index < max && !utils.isUndefined(max_point_value)) {
+			get_point_2 += max_point_value;
+		} else if (utils.isUndefined(max_point_value)) {
 			max_index = null;
 		}
-
-		min_index--;
-		max_index++;
+		min_index -= space;
+		max_index += space;
 
 		let sum = get_point_1 + get_point_2 - chess_val;
-
+		
 		if (sum > 4 || sum < -4) {
 			return true;
 		}
@@ -41,45 +37,28 @@ function calculateX() {
 	return false;
 }
 
-function calculateY() {
-	const space = row_num;
+function calculateX() {
+	let min_col = chess_point[1] - 4 > 0 ? chess_point[1] - 4 : 1;
+	let max_col = chess_point[1] + 4 > row_num ? row_num : chess_point[1] + 4;
 
+	min_col = getPointIndex([chess_point[0], min_col]) - 1;
+	max_col = getPointIndex([chess_point[0], max_col]) + 1;
+
+	const result = commonCalculateXY(min_col, max_col, 1);
+
+	return result;
+}
+
+function calculateY() {
 	let min_row = chess_point[0] - 4 > 0 ? chess_point[0] - 4 : 1;
 	let max_row = chess_point[0] + 4 > row_num ? row_num : chess_point[0] + 4;
 
 	min_row = getPointIndex([min_row, chess_point[1]]) - 1;
 	max_row = getPointIndex([max_row, chess_point[1]]) + 1;
 
-	let get_point_1 = 0;
-	let get_point_2 = 0;
-
-	let min_index = point_index;
-	let max_index = point_index;
-
-	for (let i = 0; i < 5; i++) {
-		if (min_index > min_row && !utils.isUndefined(chess_array[min_index])) {
-			get_point_1 += chess_array[min_index];
-		} else if (utils.isUndefined(chess_array[min_index])) {
-			min_index = null;
-		}
-
-		if (max_index < max_row && !utils.isUndefined(chess_array[max_index])) {
-			get_point_2 += chess_array[max_index];
-		} else if (utils.isUndefined(chess_array[max_index])) {
-			max_index = null;
-		}
-
-		min_index -= space;
-		max_index += space;
-
-		let sum = get_point_1 + get_point_2 - chess_val;
-
-		if (sum > 4 || sum < -4) {
-			return true;
-		}
-	}
-
-	return false;
+	const result = commonCalculateXY(min_row, max_row, row_num);
+	
+	return result;
 }
 
 function calculateZ() {
@@ -165,10 +144,10 @@ function calculateZ() {
 	}
 
 	for (let i = 0; i < 5; i++) {
-		let min_val_L = chess_array[index_min_L];
-		let min_val_R = chess_array[index_min_R];
-		let max_val_L = chess_array[index_max_L];
-		let max_val_R = chess_array[index_max_R];
+		let min_val_L = chess_array[index_min_L] ? chess_array[index_min_L].value : undefined;
+		let min_val_R = chess_array[index_min_R] ? chess_array[index_min_R].value : undefined;
+		let max_val_L = chess_array[index_max_L] ? chess_array[index_max_L].value : undefined;
+		let max_val_R = chess_array[index_max_R] ? chess_array[index_max_R].value : undefined;
 
 		if (
 			index_min_L > edgePointCheck.min_L - 1 &&
@@ -240,16 +219,22 @@ function count(chessArray, rowNum, point, val) {
 
 	const index = getPointIndex(point);
 
-	chessArray[index] = val;
+	chessArray[index] = {};
+	chessArray[index].value = val;
+	chessArray[index].point = chess_point;
 
 	chess_array = chessArray;
 	point_index = index;
 
-	return chessArray;
+	const is_win = isWin();
+
+	return {
+		chess_array: chessArray,
+		is_win: is_win
+	};
 }
 
 export default {
 	getPointIndex,
-	count,
-	isWin
+	count
 };

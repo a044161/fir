@@ -101,7 +101,7 @@ var point$1 = {
 };
 
 var fir_wrapper = function fir_wrapper(data) {
-	return "<div class=\"fir\">" + data + "</div>";
+	return "\n    <div class=\"fir\">\n        <div class=\"fir__header\">\n            <p class=\"fir__header__p\">\u5F53\u524D\u4E3A\uFF1A\u9ED1\u65B9</>\n        </div>\n        <div class=\"fir__body\">\n            " + data + "\n        </div>\n        <div class=\"fir__side\">\n            <button class=\"fir__button\" id=\"backMoveBtn\">\u6094\u68CB</button>\n            <button class=\"fir__button\" id=\"resetBtn\">\u91CD\u65B0\u5F00\u59CB</button>\n        </div>\n    </div>";
 };
 
 var fir_col = function fir_col(data) {
@@ -177,6 +177,21 @@ var addClass = function () {
 /**
  * 删除类名
  */
+var removeClass = function () {
+	return function (element, className) {
+		var oldClassName = element.className.split(" ");
+		var removeClassName = className.split(" ");
+
+		removeClassName.forEach(function (c, index) {
+			var c_index = oldClassName.indexOf(c);
+			if (c_index > -1) {
+				oldClassName.splice(c_index, 1);
+			}
+		});
+
+		element.className = oldClassName.join(" ");
+	};
+}();
 
 /**
  * 增加事件监听器
@@ -231,13 +246,7 @@ var chess_point = void 0;
 var point_index = void 0;
 var chess_val = void 0;
 
-function calculateX() {
-	var min_col = chess_point[1] - 4 > 0 ? chess_point[1] - 4 : 1;
-	var max_col = chess_point[1] + 4 > row_num ? row_num : chess_point[1] + 4;
-
-	min_col = getPointIndex([chess_point[0], min_col]) - 1;
-	max_col = getPointIndex([chess_point[0], max_col]) + 1;
-
+function commonCalculateXY(min, max, space) {
 	var get_point_1 = 0;
 	var get_point_2 = 0;
 
@@ -245,59 +254,20 @@ function calculateX() {
 	var max_index = point_index;
 
 	for (var i = 0; i < 5; i++) {
-		if (min_index > min_col && !utils.isUndefined(chess_array[min_index])) {
-			get_point_1 += chess_array[min_index];
-		} else if (utils.isUndefined(chess_array[min_index])) {
+		var min_point_value = chess_array[min_index] ? chess_array[min_index].value : undefined;
+		var max_point_value = chess_array[max_index] ? chess_array[max_index].value : undefined;
+
+		if (min_index > min && !utils.isUndefined(min_point_value)) {
+			get_point_1 += min_point_value;
+		} else if (utils.isUndefined(min_point_value)) {
 			min_index = null;
 		}
 
-		if (max_index < max_col && !utils.isUndefined(chess_array[max_index])) {
-			get_point_2 += chess_array[max_index];
-		} else if (utils.isUndefined(chess_array[max_index])) {
+		if (max_index < max && !utils.isUndefined(max_point_value)) {
+			get_point_2 += max_point_value;
+		} else if (utils.isUndefined(max_point_value)) {
 			max_index = null;
 		}
-
-		min_index--;
-		max_index++;
-
-		var sum = get_point_1 + get_point_2 - chess_val;
-
-		if (sum > 4 || sum < -4) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-function calculateY() {
-	var space = row_num;
-
-	var min_row = chess_point[0] - 4 > 0 ? chess_point[0] - 4 : 1;
-	var max_row = chess_point[0] + 4 > row_num ? row_num : chess_point[0] + 4;
-
-	min_row = getPointIndex([min_row, chess_point[1]]) - 1;
-	max_row = getPointIndex([max_row, chess_point[1]]) + 1;
-
-	var get_point_1 = 0;
-	var get_point_2 = 0;
-
-	var min_index = point_index;
-	var max_index = point_index;
-
-	for (var i = 0; i < 5; i++) {
-		if (min_index > min_row && !utils.isUndefined(chess_array[min_index])) {
-			get_point_1 += chess_array[min_index];
-		} else if (utils.isUndefined(chess_array[min_index])) {
-			min_index = null;
-		}
-
-		if (max_index < max_row && !utils.isUndefined(chess_array[max_index])) {
-			get_point_2 += chess_array[max_index];
-		} else if (utils.isUndefined(chess_array[max_index])) {
-			max_index = null;
-		}
-
 		min_index -= space;
 		max_index += space;
 
@@ -309,6 +279,30 @@ function calculateY() {
 	}
 
 	return false;
+}
+
+function calculateX() {
+	var min_col = chess_point[1] - 4 > 0 ? chess_point[1] - 4 : 1;
+	var max_col = chess_point[1] + 4 > row_num ? row_num : chess_point[1] + 4;
+
+	min_col = getPointIndex([chess_point[0], min_col]) - 1;
+	max_col = getPointIndex([chess_point[0], max_col]) + 1;
+
+	var result = commonCalculateXY(min_col, max_col, 1);
+
+	return result;
+}
+
+function calculateY() {
+	var min_row = chess_point[0] - 4 > 0 ? chess_point[0] - 4 : 1;
+	var max_row = chess_point[0] + 4 > row_num ? row_num : chess_point[0] + 4;
+
+	min_row = getPointIndex([min_row, chess_point[1]]) - 1;
+	max_row = getPointIndex([max_row, chess_point[1]]) + 1;
+
+	var result = commonCalculateXY(min_row, max_row, row_num);
+
+	return result;
 }
 
 function calculateZ() {
@@ -382,10 +376,10 @@ function calculateZ() {
 	}
 
 	for (var _i = 0; _i < 5; _i++) {
-		var min_val_L = chess_array[index_min_L];
-		var min_val_R = chess_array[index_min_R];
-		var max_val_L = chess_array[index_max_L];
-		var max_val_R = chess_array[index_max_R];
+		var min_val_L = chess_array[index_min_L] ? chess_array[index_min_L].value : undefined;
+		var min_val_R = chess_array[index_min_R] ? chess_array[index_min_R].value : undefined;
+		var max_val_L = chess_array[index_max_L] ? chess_array[index_max_L].value : undefined;
+		var max_val_R = chess_array[index_max_R] ? chess_array[index_max_R].value : undefined;
 
 		if (index_min_L > edgePointCheck.min_L - 1 && !utils.isUndefined(min_val_L) && index_max_L !== point_index) {
 			get_point_1 += min_val_L;
@@ -443,18 +437,24 @@ function count(chessArray, rowNum, point, val) {
 
 	var index = getPointIndex(point);
 
-	chessArray[index] = val;
+	chessArray[index] = {};
+	chessArray[index].value = val;
+	chessArray[index].point = chess_point;
 
 	chess_array = chessArray;
 	point_index = index;
 
-	return chessArray;
+	var is_win = isWin();
+
+	return {
+		chess_array: chessArray,
+		is_win: is_win
+	};
 }
 
 var calculate = {
 	getPointIndex: getPointIndex,
-	count: count,
-	isWin: isWin
+	count: count
 };
 
 var FIR = function () {
@@ -469,7 +469,8 @@ var FIR = function () {
 		this.firBoard = [];
 		this.firstChess = 1;
 		this.isDisabled = false;
-		this.winner = "";
+		this.winner = ""; // 输出赢家
+		this.squence = []; // 记录下棋的顺序
 
 		this.configs = utils.merge(defaultConfigs, configs);
 
@@ -488,15 +489,40 @@ var FIR = function () {
 	_createClass(FIR, [{
 		key: "init",
 		value: function init() {
-			this.element = getElement("#" + this.configs.id);
-
+			var element = getElement("#" + this.configs.id);
 			var fir_body = this.createRow() + this.createCol() + this.createPoint(); // 生成格子以及点
 
-			this.element.innerHTML = tpl("fir_wrapper", fir_body);
+			element.innerHTML = tpl("fir_wrapper", fir_body);
 
 			var firPointWrapper = getElement(".fir__point");
+			var backMoveBtn = getElement('#backMoveBtn');
+			var resetBtn = getElement('#resetBtn');
 
-			on(firPointWrapper, "click", this.handleChess.bind(this));
+			this.setFirSize();
+
+			this.element_title = getElement(".fir__header__p");
+
+			on(firPointWrapper, "click", this.handleChessClick.bind(this));
+			on(backMoveBtn, 'click', this.handleBackMove.bind(this));
+			on(resetBtn, 'click', this.handleReset.bind(this));
+		}
+
+		// 将棋盘的大小根据宽度，自动去计算高度，保证在外容器在宽高不一致的情况下棋盘依旧为正方形
+
+	}, {
+		key: "setFirSize",
+		value: function setFirSize() {
+			var firWrapper = getElement('.fir');
+			var firBody = getElement('.fir__body');
+
+			var scale = 0.8;
+
+			var firBodyWidth = firWrapper.clientWidth * scale;
+			var firBodyHeight = firBodyWidth / firWrapper.clientHeight * 100 + '%';
+
+			firBody.style.width = scale * 100 + '%';
+			firBody.style.height = firBodyHeight;
+			firBody.style.position = 'relative';
 		}
 
 		/**
@@ -622,36 +648,86 @@ var FIR = function () {
 
 			return point_element;
 		}
+
+		// 悔棋操作
+
 	}, {
-		key: "handleChess",
-		value: function handleChess(evt) {
+		key: "handleBackMove",
+		value: function handleBackMove() {
+			if (this.squence.length === 0) {
+				return;
+			}
+
+			var pre_step = this.squence.pop();
+			this.firBoard[pre_step.index] = undefined;
+
+			this.firstChess = this.firstChess === 1 ? -1 : 1;
+			this.element_title.innerHTML = "\u5F53\u524D\u4E3A\uFF1A" + (this.firstChess === 1 ? '黑方' : '白方');
+
+			removeClass(getElement("[data-point=\"[" + pre_step.point + "]\"]"), "fir__point__block--black fir__point__block--white");
+		}
+	}, {
+		key: "handleReset",
+		value: function handleReset() {
+			this.firBoard = [];
+
+			this.squence.forEach(function (step) {
+				removeClass(getElement("[data-point=\"[" + step.point + "]\"]"), "fir__point__block--black fir__point__block--white");
+			});
+
+			this.squence = [];
+			this.firstChess = 1;
+			this.element_title.innerHTML = "\u5F53\u524D\u4E3A\uFF1A\u9ED1\u65B9";
+		}
+
+		// 点击操作
+
+	}, {
+		key: "handleChessClick",
+		value: function handleChessClick(evt) {
 			var target = evt.target;
 
 			if (target.dataset.point && !this.isDisabled) {
 				var _point = getDataSet(target, "point");
-
-				var index = (_point[0] - 1) * (this.configs.size + 1) + (_point[1] - 1);
-
-				if (!utils.isUndefined(this.firBoard[index])) {
-					return;
-				}
-
-				if (this.firstChess === 1) {
-					addClass(target, "fir__point__block--black");
-				} else {
-					addClass(target, "fir__point__block--white");
-				}
-
-				this.firBoard = calculate.count(this.firBoard, this.configs.size + 1, _point, this.firstChess);
-				if (calculate.isWin()) {
-					this.isDisabled = true;
-					this.winner = this.firstChess === 1 ? "黑方" : "白方";
-					alert("\u83B7\u80DC\u65B9\u4E3A\uFF1A" + this.winner);
-					return;
-				}
-
-				this.firstChess = this.firstChess === 1 ? -1 : 1;
+				this.handleChess(_point, target);
 			}
+		}
+
+		// 下棋的操作
+
+	}, {
+		key: "handleChess",
+		value: function handleChess(point, target) {
+			var is_win = false;
+			var index = (point[0] - 1) * (this.configs.size + 1) + (point[1] - 1);
+
+			if (!utils.isUndefined(this.firBoard[index])) {
+				return;
+			}
+
+			if (this.firstChess === 1) {
+				addClass(target, "fir__point__block--black");
+			} else {
+				addClass(target, "fir__point__block--white");
+			}
+
+			var calculate_result = calculate.count(this.firBoard, this.configs.size + 1, point, this.firstChess);
+
+			this.firBoard = calculate_result.chess_array;
+			is_win = calculate_result.is_win;
+
+			if (is_win) {
+				this.isDisabled = true;
+				this.winner = this.firstChess === 1 ? "黑方" : "白方";
+				alert("\u83B7\u80DC\u65B9\u4E3A\uFF1A" + this.winner);
+				return;
+			}
+
+			this.firstChess = this.firstChess === 1 ? -1 : 1;
+
+			this.squence.push({ point: point, index: index });
+
+			this.element_title.innerHTML = "\u5F53\u524D\u4E3A\uFF1A" + (this.firstChess === 1 ? '黑方' : '白方');
 		}
 	}]);
 

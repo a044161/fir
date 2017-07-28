@@ -28,6 +28,7 @@ gulp.task(
 		gulp.parallel(
 			task_html,
 			task_styles,
+			task_scripts,
 			task_image,
 			server.dev,
 			task_watch
@@ -37,5 +38,5 @@ gulp.task(
 
 gulp.task(
 	"build",
-	gulp.series("clean", gulp.parallel(task_html, task_styles, task_image))
+	gulp.series("clean", gulp.parallel(task_html, task_styles, task_scripts, task_image))
 );
