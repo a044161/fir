@@ -1,7 +1,15 @@
 .fir {
 	width: 100%;
 	height: 100%;
-	position: relative;
+}
+
+.fir__body{
+	margin: 10% 0;
+	float: left;
+}
+
+.fir__side{
+	float: left;
 }
 
 .fir__row,

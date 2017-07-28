@@ -28,6 +28,7 @@ gulp.task(
 		gulp.parallel(
 			task_html,
 			task_styles,
+			task_scripts,
 			task_image,
 			task_scripts,
 			server.dev,
