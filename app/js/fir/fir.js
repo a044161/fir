@@ -17,8 +17,8 @@ class FIR {
 			size: 14
 		};
 
-		this.firBoard = [];
-		this.firstChess = 1;
+		this.firBoard = []; // 计算五子连珠的数组
+		this.firstChess = 1; // 黑棋先
 		this.isDisabled = false;
 		this.winner = ""; // 输出赢家
 		this.squence = []; // 记录下棋的顺序
@@ -27,7 +27,6 @@ class FIR {
 
 		if (this.configs.id) {
 			this.init();
-			
 		}
 	}
 
@@ -44,31 +43,35 @@ class FIR {
 		element.innerHTML = tpl("fir_wrapper", fir_body);
 
 		const firPointWrapper = getElement(".fir__point");
-		const backMoveBtn = getElement('#backMoveBtn');
-		const resetBtn = getElement('#resetBtn');
+		const backMoveBtn = getElement("#backMoveBtn");
+		const resetBtn = getElement("#resetBtn");
 
 		this.setFirSize();
 
 		this.element_title = getElement(".fir__header__p");
 
+		// 注册下棋的点击事件
 		on(firPointWrapper, "click", this.handleChessClick.bind(this));
-		on(backMoveBtn, 'click', this.handleBackMove.bind(this));
-		on(resetBtn, 'click', this.handleReset.bind(this));
+		// 注册悔棋的点击事件
+		on(backMoveBtn, "click", this.handleBackMove.bind(this));
+		// 注册重新开始的点击事件
+		on(resetBtn, "click", this.handleReset.bind(this));
 	}
 
 	// 将棋盘的大小根据宽度，自动去计算高度，保证在外容器在宽高不一致的情况下棋盘依旧为正方形
-	setFirSize(){
-		const firWrapper = getElement('.fir');
-		const firBody = getElement('.fir__body');
+	setFirSize() {
+		const firWrapper = getElement(".fir");
+		const firBody = getElement(".fir__body");
 
 		const scale = 0.8;
 
 		const firBodyWidth = firWrapper.clientWidth * scale;
-		const firBodyHeight = (firBodyWidth / firWrapper.clientHeight) * 100 + '%';
+		const firBodyHeight =
+			firBodyWidth / firWrapper.clientHeight * 100 + "%";
 
-		firBody.style.width = scale * 100 + '%';
+		firBody.style.width = scale * 100 + "%";
 		firBody.style.height = firBodyHeight;
-		firBody.style.position = 'relative';
+		firBody.style.position = "relative";
 	}
 
 	/**
@@ -186,69 +189,91 @@ class FIR {
 	}
 
 	// 悔棋操作
-	handleBackMove(){
-		if(this.squence.length === 0){
+	handleBackMove() {
+		if (this.squence.length === 0) {
 			return;
 		}
-
+		// 获取最后一步时的棋子信息
 		const pre_step = this.squence.pop();
+
+		// 同步数据
 		this.firBoard[pre_step.index] = undefined;
 
 		this.firstChess = this.firstChess === 1 ? -1 : 1;
-		this.element_title.innerHTML = `当前为：${this.firstChess === 1? '黑方' : '白方'}`
+		this.element_title.innerHTML = `当前为：${this.firstChess === 1
+			? "黑方"
+			: "白方"}`;
 
-		removeClass(getElement(`[data-point="[${pre_step.point}]"]`), "fir__point__block--black fir__point__block--white");
+		// 同步样式
+		removeClass(
+			getElement(`[data-point="[${pre_step.point}]"]`),
+			"fir__point__block--black fir__point__block--white"
+		);
 	}
 
-	handleReset(){
+	// 重新开始
+	handleReset() {
 		this.firBoard = [];
 
-		this.squence.forEach( step => {
-			removeClass(getElement(`[data-point="[${step.point}]"]`), "fir__point__block--black fir__point__block--white");
+		this.squence.forEach(step => {
+			removeClass(
+				getElement(`[data-point="[${step.point}]"]`),
+				"fir__point__block--black fir__point__block--white"
+			);
 		});
 
-		
+		this.isDisabled = false;
 		this.squence = [];
 		this.firstChess = 1;
 		this.element_title.innerHTML = `当前为：黑方`;
 	}
 
 	// 点击操作
-	handleChessClick(evt){
+	handleChessClick(evt) {
 		const target = evt.target;
 
 		if (target.dataset.point && !this.isDisabled) {
 			const point = getDataSet(target, "point");
-			this.handleChess(point,target);
+			this.handleChess(point, target);
 		}
 	}
 
 	// 下棋的操作
 	handleChess(point, target) {
 		let is_win = false;
-		const index =
-			(point[0] - 1) * (this.configs.size + 1) + (point[1] - 1);
+
+		// 获取坐标所对应的索引值
+		const index = (point[0] - 1) * (this.configs.size + 1) + (point[1] - 1);
 
 		if (!utils.isUndefined(this.firBoard[index])) {
 			return;
 		}
 
+		// 不同棋子增加不同样式
 		if (this.firstChess === 1) {
 			addClass(target, "fir__point__block--black");
 		} else {
 			addClass(target, "fir__point__block--white");
 		}
 
+		// 计算是否获胜，返回当前的数组和是否获胜
 		const calculate_result = calculate.count(
-			this.firBoard,
-			this.configs.size + 1,
-			point,
-			this.firstChess
+			this.firBoard, // 计算五子连珠的数组
+			this.configs.size + 1, // 当前棋盘的大小
+			point, // 棋子的坐标
+			this.firstChess // 当前的下棋方
 		);
 
+		// 用于计算是否五子连珠的数组
 		this.firBoard = calculate_result.chess_array;
+
+		// 是否获胜
 		is_win = calculate_result.is_win;
 
+		// 往下棋队列中添加
+		this.squence.push({ point: point, index: index });
+
+		// 赢的操作
 		if (is_win) {
 			this.isDisabled = true;
 			this.winner = this.firstChess === 1 ? "黑方" : "白方";
@@ -258,9 +283,9 @@ class FIR {
 
 		this.firstChess = this.firstChess === 1 ? -1 : 1;
 
-		this.squence.push({point: point, index: index});
-
-		this.element_title.innerHTML = `当前为：${this.firstChess === 1? '黑方' : '白方'}`
+		this.element_title.innerHTML = `当前为：${this.firstChess === 1
+			? "黑方"
+			: "白方"}`;
 	}
 }
 

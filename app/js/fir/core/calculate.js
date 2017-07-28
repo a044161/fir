@@ -2,7 +2,7 @@ import utils from "../modules/utils";
 
 let chess_array, row_num, chess_point, point_index, chess_val;
 
-function commonCalculateXY(min, max, space){
+function commonCalculateXY(min, max, space) {
 	let get_point_1 = 0;
 	let get_point_2 = 0;
 
@@ -10,8 +10,12 @@ function commonCalculateXY(min, max, space){
 	let max_index = point_index;
 
 	for (let i = 0; i < 5; i++) {
-		const min_point_value = chess_array[min_index] ? chess_array[min_index].value : undefined;
-		const max_point_value = chess_array[max_index] ? chess_array[max_index].value : undefined;
+		const min_point_value = chess_array[min_index]
+			? chess_array[min_index].value
+			: undefined;
+		const max_point_value = chess_array[max_index]
+			? chess_array[max_index].value
+			: undefined;
 
 		if (min_index > min && !utils.isUndefined(min_point_value)) {
 			get_point_1 += min_point_value;
@@ -28,7 +32,7 @@ function commonCalculateXY(min, max, space){
 		max_index += space;
 
 		let sum = get_point_1 + get_point_2 - chess_val;
-		
+
 		if (sum > 4 || sum < -4) {
 			return true;
 		}
@@ -57,7 +61,7 @@ function calculateY() {
 	max_row = getPointIndex([max_row, chess_point[1]]) + 1;
 
 	const result = commonCalculateXY(min_row, max_row, row_num);
-	
+
 	return result;
 }
 
@@ -143,11 +147,20 @@ function calculateZ() {
 		}
 	}
 
+	// 计算对角线四个方向上棋子的情况
 	for (let i = 0; i < 5; i++) {
-		let min_val_L = chess_array[index_min_L] ? chess_array[index_min_L].value : undefined;
-		let min_val_R = chess_array[index_min_R] ? chess_array[index_min_R].value : undefined;
-		let max_val_L = chess_array[index_max_L] ? chess_array[index_max_L].value : undefined;
-		let max_val_R = chess_array[index_max_R] ? chess_array[index_max_R].value : undefined;
+		let min_val_L = chess_array[index_min_L]
+			? chess_array[index_min_L].value
+			: undefined;
+		let min_val_R = chess_array[index_min_R]
+			? chess_array[index_min_R].value
+			: undefined;
+		let max_val_L = chess_array[index_max_L]
+			? chess_array[index_max_L].value
+			: undefined;
+		let max_val_R = chess_array[index_max_R]
+			? chess_array[index_max_R].value
+			: undefined;
 
 		if (
 			index_min_L > edgePointCheck.min_L - 1 &&
